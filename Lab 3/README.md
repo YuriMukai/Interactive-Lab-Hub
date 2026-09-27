@@ -1,235 +1,153 @@
 # Chatterboxes
 
-**NAMES OF COLLABORATORS HERE**
+**Yuri**
 
-[![Watch the video](https://user-images.githubusercontent.com/1128669/135009222-111fe522-e6ba-46ad-b6dc-d1633d21129c.png)](https://www.youtube.com/embed/Q8FWzLMobx0?start=19)
-
-In this lab, we want you to design interaction with a speech-enabled device — something that listens and talks to you. This device can do anything *but* control lights (since we already did that in Lab 1). First, we want you to storyboard what you imagine the conversational interaction to be like. Then you will use wizarding techniques to elicit examples of what people might say, ask, or respond. We then want you to use the examples collected from at least two other people to inform the redesign of the device.
-
-We will focus on **audio** as the main modality for interaction to start; these general techniques can be extended to **video**, **haptics** or other interactive mechanisms in the second part of the Lab.
-
-A note on what you are building with. Speech interfaces are usually taught as two boxes — speech-in, speech-out — and that framing hides the part that actually determines whether an interaction works. Between listening and speaking sits the question of **whose turn it is**: when does the device decide you have finished talking, and how long does it make you wait before it answers? This lab gives you direct control over both, and we will ask you to notice what changes when you move them.
-
-## Prep for Part 1: Get the Latest Content and Pick up Additional Parts
-
-Please check instructions in [prep.md](prep.md) and complete the setup.
-
-### Pick up Web Camera If You Don't Have One
-
-Students who have not already received a web camera will receive their Webcam and at the beginning of lab. If you cannot make it to class this week, please contact the TAs to ensure you get these.
-
-### Get the Latest Content
-
-As always, pull updates from the class Interactive-Lab-Hub to both your Pi and your own GitHub repo.
-
-**\[recommended\]** Option 1: On the Pi, `cd` to your `Interactive-Lab-Hub`, pull the updates from upstream (class lab-hub) and push the updates back to your own GitHub repo. You will need the *personal access token* for this.
-
-```
-pi@ixe00:~$ cd Interactive-Lab-Hub
-pi@ixe00:~/Interactive-Lab-Hub $ git pull upstream Fall2026
-pi@ixe00:~/Interactive-Lab-Hub $ git add .
-pi@ixe00:~/Interactive-Lab-Hub $ git commit -m "get lab3 updates"
-pi@ixe00:~/Interactive-Lab-Hub $ git push
-```
-
-Option 2: On your own GitHub repo, create a pull request to get updates from the class Interactive-Lab-Hub. After you have the latest updates online, go to your Pi, `cd` to your `Interactive-Lab-Hub` and use `git pull`.
+A voice parking assistant: you talk to the car and it parks for you. I designed it and tested it with Wizard of Oz techniques.
 
 ---
 
 # Part 1
 
-## Setup
-
-Create and activate a virtual environment for this lab:
-
-```
-pi@ixe00:~$ cd Interactive-Lab-Hub/Lab\ 3
-pi@ixe00:~/Interactive-Lab-Hub/Lab 3 $ python3 -m venv .venv
-pi@ixe00:~/Interactive-Lab-Hub/Lab 3 $ source .venv/bin/activate
-(.venv) pi@ixe00:~/Interactive-Lab-Hub/Lab 3 $
-```
-
-Install the Python dependencies:
-
-```
-(.venv) $ pip install -r requirements.txt
-```
-
-This takes a few minutes. If you would like it to take considerably less time, [`uv`](https://docs.astral.sh/uv/) is a drop-in replacement for `pip` that is dramatically faster on the Pi:
-
-```
-(.venv) $ pip install uv && uv pip install -r requirements.txt
-```
-
-Then run the setup script, which installs the classic speech synthesizers, downloads the voice activity detection model, and pre-fetches a neural voice and a speech recognition model so you are not waiting on downloads during lab:
-
-```
-(.venv):~$ cd speech-scripts
-(.venv) $ ./setup.sh
-```
-
-Check your audio devices before going further. `arecord -l` lists capture devices and `aplay -l` lists playback devices; if your webcam microphone or Bluetooth speaker does not appear, fix that first — every script below assumes the system defaults are the ones you want.
-
 ## A. Text to Speech
 
-Your Pi can speak in several quite different ways, and the differences are audible in a way that matters for design. In `speech-scripts/` there are shell scripts for each.
+**Write your own shell file to use your favorite of these TTS engines to have your Pi greet you by name.**
 
-### The classic engines
+I used Piper, because it sounded a little more gentlemanly and polite, and it felt like the latest technology. The script is [`speech-scripts/greeting.sh`](speech-scripts/greeting.sh).
 
-```
-(.venv) $ cd speech-scripts
+**Is the same greeting, in these different voices, the same greeting? Describe one concrete way the voice changed what the utterance seemed to mean or who seemed to be speaking.**
 
-(.venv) $ sudo apt update
-(.venv) $ sudo apt install -y espeak festival festvox-kallpc16k
-
-(.venv) $ ./espeak_demo.sh
-(.venv) $ ./festival_demo.sh
-```
-
-You can run these `.sh` files by typing `./filename`, and read one with `cat filename`. You can also play audio files directly with `aplay filename` — try `aplay lookdave.wav`.
-
-These are all decades-old technology and they sound like it. `espeak-ng` is a *formant synthesizer*: it generates speech from an acoustic model of the vocal tract, which is why it sounds robotic but also why the whole thing fits in a couple of megabytes and responds instantly. `festival` is *concatenative*: they stitch together recorded fragments of a real speaker, which sounds more human but breaks audibly at the seams.
-
-### Neural TTS with Piper
-
-Note that the Piper command line changed in version 1.x — voices are now downloaded explicitly with `python3 -m piper.download_voices`, and you invoke it as `python3 -m piper`. Tutorials you find online may show the old `echo ... | piper --model ...` form, which no longer works. Browse the [voice samples](https://rhasspy.github.io/piper-samples) and download a different one if you'd like:
-
-```
-(.venv) $ python3 -m piper.download_voices en_US-lessac-medium
-```
-
-[Piper](https://github.com/OHF-Voice/piper1-gpl) synthesizes speech with a small neural network, runs comfortably on the Pi 5, and sounds markedly better than the above.
-
-```
-(.venv) $ ./piper_demo.sh
-```
-
-The demo script also shows `--output-raw`, which streams audio to the speaker as it is generated rather than writing a file first. Listen for the difference in how quickly speech begins. In a conversational system this gap is the thing your user experiences as responsiveness.
-
-\*\***Write your own shell file to use your favorite of these TTS engines to have your Pi greet you by name.**\*\*
-(This shell file should be saved to your own repo for this lab.)
-
-\*\***Then answer: Is the same greeting, in these different voices, the same greeting? Describe one concrete way the voice changed what the utterance seemed to mean or who seemed to be speaking.**\*\*
-
-## B. Speech to Text
-
-We use [faster-whisper](https://github.com/SYSTRAN/faster-whisper), a reimplementation of OpenAI's Whisper model that runs several times faster on CPU and does not require PyTorch. All processing happens on the Pi; nothing is sent to a server.
-
-```
-(.venv) $ python transcribe.py lookdave.wav
-```
-
-The transcript is not the interesting output here — the timings are. Run it again with a larger model and compare:
-
-```
-(.venv) $ python transcribe.py lookdave.wav --model base.en
-(.venv) $ python transcribe.py lookdave.wav --model small.en
-#  noted that the first run may take longer because the model is downloaded, and that the HF unauthenticated-request warning is expected and not an error.
-```
-
-Available sizes, smallest first: `tiny.en`, `base.en`, `small.en`, `medium.en`. The `.en` variants are English-only and faster than their multilingual counterparts at the same size.
-
-\*\***Record a few seconds of your own speech (`arecord -d 5 -f cd -c 1 -r 16000 test.wav`) and transcribe it with at least two model sizes. Report the real-time factor for each. At what point does the accuracy improvement stop being worth the delay, for a system that has to answer you?**\*\*
-
-\*\***Write your own script that verbally asks for a numerical input (a phone number, zipcode, number of pets) and records the answer the respondent provides.**\*\* Numbers are a good stress test — transcription systems make characteristic errors on digit strings, and you will want to know what they are before you design around them.
-
-## C. Turn-taking: knowing when someone has stopped talking
-
-Everything so far has worked on fixed audio files. A real conversational device does not get told when to start and stop recording — it has to decide. This is the problem that makes speech interfaces hard, and it is mostly not a speech recognition problem.
-
-We use a **voice activity detector** (VAD) to segment the microphone stream into utterances. `listen.py` runs Silero VAD continuously and hands each detected utterance to faster-whisper:
-
-```
-(.venv) $ cd speech-scripts
-(.venv) $ python listen.py
-```
-
-Speak, pause, and watch it transcribe. Now change the endpointing threshold — the amount of silence the system requires before it decides your turn is over:
-
-```
-(.venv) $ python listen.py --min-silence 0.2
-(.venv) $ python listen.py --min-silence 1.5
-```
-
-\*\***Try both extremes, and something in between. Describe what each one feels like to talk to. Note specifically: at 0.2s, what kinds of normal speech get cut off? At 1.5s, what does the delay make the system seem like?**\*\*
-
-There is no correct value. A system that takes drink orders and a system that listens to someone think out loud want very different thresholds, and the right one depends on what your users are doing with their pauses.
-
-### The complete loop
-
-`echo_bot.py` puts the pieces together: it listens, endpoints, transcribes, and speaks a reply through Piper. The dialogue policy is deliberately trivial — it repeats what you said — so that everything you notice is a property of the timing rather than the content.
-
-```
-(.venv) $ python echo_bot.py
-```
-
-## D. Storyboard
-
-Storyboard and/or use a Verplank diagram to design a speech-enabled device. (Stuck? Make a device that talks for dogs. If that is too stupid, find an application that is better than that.)
-
-\*\***Post your storyboard and diagram here.**\*\*
-
-Write out what you imagine the dialogue to be. Use cards, post-its, or whatever method helps you develop alternatives or group responses.
-
-\*\***Please describe and document your process.**\*\*
-
-Your script should include the pauses. Where does your device wait, and for how long? You now know from Part C that this is a parameter you have to choose, not something that happens for free.
-
-## E. Acting out the dialogue
-
-Find a partner, and *without sharing the script with your partner* try out the dialogue you've designed, where you (as the device designer) act as the device you are designing. Please record this interaction (for example, using Zoom's record feature).
-
-\*\***Describe if the dialogue seemed different than what you imagined when it was acted out, and how.**\*\*
-
+When the voice is different, the same words give a different impression. For example, espeak had no emotion in its voice, and Festival had a low male voice with a rough, mechanical sound, so it felt like the voice of an old machine. Both gave me the impression of an old machine, and that made me imagine a device that detects me coming home with a sensor and says "welcome back" just because a rule tells it to. On the other hand, Piper still sounded like a machine, but it had natural intonation like a car navigation system, so it felt like a modern voice. That made me imagine a personalized home agent that notices I came home and says, "Welcome back, you're late today," as if it understood my feelings and my situation. I think the biggest difference was whether the voice seemed to carry emotion and whether it sounded natural.
 
 ---
 
-# Lab 3 Part 2
+## B. Speech to Text
 
-For Part 2, you will redesign the interaction with the speech-enabled device using the data collected, as well as feedback from part 1.
+**Record a few seconds of your own speech and transcribe it with at least two model sizes. Report the real-time factor for each. At what point does the accuracy improvement stop being worth the delay, for a system that has to answer you?**
 
-## Prep for Part 2
+I recorded myself for 5 seconds saying "Hello, my name is Yuri. Today is Sunday and the weather is nice." and transcribed it with two models.
 
-1. What are concrete things that could use improvement in the design of your device? For example: wording, timing, anticipation of misunderstandings.
-2. What are other modes of interaction *beyond speech* that you might also use to clarify how to interact? In particular: how does someone know when the device is listening, and when it is thinking? You have a screen and an LED.
-3. Make a new storyboard, diagram and/or script based on these reflections.
-4. (optional) Integrate [input devices](inputs.md) in the system
+| Model | Transcript | Transcription time | RTF |
+|---|---|---|---|
+| tiny.en | Hello, my name is Yuri, welcome to the next video. | 1.39s | 0.28x |
+| base.en | Hello, my name is Yuri, today is Sunday. | 2.33s | 0.47x |
 
-## Prototype your system
+tiny.en was faster, but it replaced the second half with "welcome to the next video," which I never said. base.en was about one second slower, but it heard what I actually said. I think being about one second slower is fine if the result is accurate.
 
-The system should:
-* use the Raspberry Pi
-* use one or more sensors
-* require participants to speak to it
+**Write your own script that verbally asks for a numerical input and records the answer the respondent provides.**
 
-*Document how the system works.*
+My script [`speech-scripts/ask_zip.py`](speech-scripts/ask_zip.py) asks for a zip code, reads back the digits it heard to confirm, and saves the answer. When I said 11101, it sometimes heard 11121. Maybe my pronunciation was part of the problem, but number recognition seemed weak. Speaking one digit at a time with clear breaks made it work more often, but then the pauses sometimes triggered the end-of-turn detection, and the rest was treated as the next sentence.
 
-*Include videos or screencaptures of both the system and the controller.*
+---
+
+## C. Turn-taking
+
+**Try both extremes, and something in between. Describe what each one feels like to talk to. Note specifically: at 0.2s, what kinds of normal speech get cut off? At 1.5s, what does the delay make the system seem like?**
+
+Results:
+- **0.2s:** "I want to order um..." and "Uh, coffee please." were split into two, and my zip code was broken into pieces like "1, 1, 1." and "1, 2, 1." Pauses for thinking ("um") and the breaks between digits were cut off.
+- **0.4s:** Sentences were cut in the middle, and meaningless fragments like "head end." appeared.
+- **0.7s:** My zip code and my coffee order were captured as one utterance, but when I paused to think, it split into "...but" and "I couldn't."
+- **1.5s:** Everything was captured completely and accurately.
+
+Personally, none of them felt very slow with listen.py. Maybe that is because I was not asking a question and expecting an answer. When I tried echo_bot.py, which replies to me, 1.5s felt slower, because I expected a quick reply and had to wait.
+
+---
+
+## D. Storyboard
+
+**Post your storyboard and diagram here.**
+
+**Storyboard:** [View the storyboard](https://drive.google.com/file/d/16jRKrF0B0F8aqmULiY6EmomXOQXDkPt3/view?usp=drive_link)
+
+My device is a voice assistant that parks the car when you ask it to. The storyboard has four panels: arrive and ask → choose a spot → confirm → parked ("Don't forget your bag").
+
+I chose Piper for the voice because it felt like a modern system. Basically, the device always waits about 2 seconds before answering. I used the same wait for yes/no answers and for "stop," because I want to see how the participant reacts. I would also like to separately try a version where the device interrupts the user, and compare the two.
+
+**Please describe and document your process.**
+
+Auto parking systems are not intuitive to operate, so I thought it would be interesting to try controlling one by voice. Also, driving is something that can become very dangerous if one thing goes wrong, so I thought it would be easy to see whether people feel frustrated when they do it by voice.
+
+---
+
+## E. Acting out the dialogue
+
+**Recordings:**
+- [Session 1](https://drive.google.com/file/d/1U9dzBW_cCBYgBWoBjwChu8D_Fivl0rSw/view?usp=drive_link)
+- [Session 2](https://drive.google.com/file/d/1b3GLwRm8wqWck19GPcDTlxradHoKMByz/view?usp=drive_link)
+- [Session 3](https://drive.google.com/file/d/1xYOjqBgOwCRz_Ok4W5SXGv8HpMj7CZmn/view?usp=drive_link)
+
+**Describe if the dialogue seemed different than what you imagined when it was acted out, and how.**
+
+I played the AI agent in front of the participant and watched how they reacted.
+
+- They asked in ways like "Is there anywhere I can park?" and "Could you park?"
+- They said "anywhere" for the spot. All I could do was ask whether left or right was better.
+- They said "Yes" a lot.
+- Unlike my script, they did not hesitate or stumble much, so I never had to interrupt them.
+- I made them wait about 2 seconds before answering, but when I asked if the slow replies were frustrating, they said they did not notice at all.
+- When I watched the video later, the participant was looking at me a lot, as if checking my reaction. I think they were reading my face to figure out what I was doing: whether I was thinking, listening, or waiting for them to ask for something.
+
+---
+
+# Part 2
+
+## Redesign
+
+- When the driver asks the car to park, the car itself suggests a spot ("This spot is available") and asks for confirmation, because many drivers leave the decision to the car.
+- Instead of my face, the participant looks at a screen. I made a UI that shows whether the system is thinking or listening (Listening / Thinking / Checking safety / All clear / Parking / Parked).
+- After the safety check, the car asks for a final confirmation: "Should I start parking?"
+- The end-of-turn pause is 0.7s, which felt the most natural in Part 1C.
+- The top button next to the screen is an emergency stop.
+
+## Prototype: how the system works
+
+**Video (system and controller):** [Watch the video](https://drive.google.com/file/d/1ApytHbG9ts9VF9eS_EbKox-CrWJW_4Bi/view?usp=drive_link)
+
+It is a Wizard of Oz system ([`speech-scripts/parking_wizard.py`](speech-scripts/parking_wizard.py)).
+
+- **Participant (driver):** Sits in front of the Raspberry Pi, looks at its screen, and asks the car to park.
+- **Pi (the car):** Listens through the microphone and transcribes speech (listen.py with base.en), and speaks with Piper. The mini screen shows the current state, and it switches to "Thinking" automatically when the driver finishes speaking. The top button stops the car and the bottom button resets.
+- **Me (the wizard):** I open the controller in a browser on my PC. While watching what the driver said, I press buttons with scripted lines to make the car speak. For anything not in the script, I type a line in a free text box.
+- Every event is logged with a timestamp ([`session_log_person1.jsonl`](session_log_person1.jsonl)).
 
 ## Test the system
 
-Try to get at least two people to interact with your system. (Ideally, you would inform them that there is a wizard *after* the interaction, but we recognize that can be hard.)
-
-Answer the following:
+I could only test with one participant; I was not able to find a second person. So the results below are early observations from a single session.
 
 ### What worked well about the system and what didn't?
-\*\**your answer here*\*\*
+
+**What worked:**
+- The participant said it was helpful that the screen showed whether the system was thinking or listening.
+- They liked the last line, "Don't forget your bag."
+
+**What didn't work:**
+- They said they were speaking clearly, but the car did not answer, and it took a long time to reply. The system failed to recognize their voice many times, which frustrated them.
+- There was a long gap between when they finished speaking and when the screen switched to "Thinking."
+- They were very frustrated that "Listening" never ended. On the other hand, they said a long "Thinking" was still acceptable.
+- Being told "Could you say that again?" was frustrating.
+- When the car said "Say stop anytime," they thought "stop" was for when the car got too close to something. They did not expect it to mean stopping the whole parking.
+- The reaction after saying "stop" was far too slow. They said that in real life, this would be fatal.
+
+**Reflection:**
+It was interesting that a long "Listening" was not acceptable, but a long "Thinking" was. Both states were shown on the screen, so I think what matters is not only whether the user can see the situation, but whether they can accept it. When "Listening" does not switch, it looks like the system has not noticed that the conversation ended, so it is not acceptable. When "Thinking" takes a long time, it feels like the AI is thinking in order to give a good answer, so it seems unavoidable.
 
 ### What worked well about the controller and what didn't?
-\*\**your answer here*\*\*
+
+**What worked:**
+- Because scripted lines were buttons, I could answer quickly without typing. Some buttons also changed the screen automatically, so one press was enough.
+- I could see the transcription of what the driver said, so I knew what the system heard (it was often different from what they actually said).
+
+**What didn't work:**
+- Because I was right in front of the participant, typing gave away that I was controlling the car.
+- I could not see what the Pi screen was showing at that moment, which made things confusing.
 
 ### What lessons can you take away from the WoZ interactions for designing a more autonomous version of the system?
-\*\**your answer here*\*\*
+
+- Ending "Listening" a little earlier and switching to "Thinking" would probably reduce frustration. If the user still wants to talk, the system can switch back to "Listening" as soon as they start speaking again.
+- When the system cannot understand, it should say "Please say that again" without making the user wait. "Say that again" itself was frustrating, but the most stressful situation seemed to be waiting and then finding out the system had not understood.
+- "Don't forget your bag" worked really well. I want to keep in mind how important a small extra phrase like this is.
 
 ### How could you use your system to create a dataset of interaction? What other sensing modalities would make sense to capture?
-\*\**your answer here*\*\*
 
-<details>
-  <summary><strong>Submission Cleanup Reminder (Click to Expand)</strong></summary>
-
-  **Before submitting your README.md:**
-  - This readme.md file has a lot of extra text for guidance.
-  - Remove all instructional text and example prompts from this file.
-  - You may either delete these sections or use the toggle/hide feature in VS Code to collapse them for a cleaner look.
-  - Your final submission should be neat, focused on your own work, and easy to read for grading.
-</details>
+- I could collect logs of what users actually say when they want the car to park. Since each driver utterance is recorded together with the reply I chose as the wizard, the logs could also serve as examples of how an AI should respond.
+- Sensors to find open spots to suggest, sensors to check safety, and a sensor that detects the end of speech from mouth movement.

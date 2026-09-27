@@ -1,0 +1,39 @@
+{"time": "16:22:44", "kind": "session", "text": "start"}
+{"time": "16:23:08", "kind": "screen", "text": "talking"}
+{"time": "16:23:08", "kind": "car", "text": "Hi, I'm your parking assistant. Just tell me when you'd like to park."}
+{"time": "16:23:14", "kind": "screen", "text": "listening"}
+{"time": "16:23:29", "kind": "screen", "text": "talking"}
+{"time": "16:23:29", "kind": "car", "text": "Sorry, could you say that again?"}
+{"time": "16:23:35", "kind": "screen", "text": "listening"}
+{"time": "16:23:50", "kind": "screen", "text": "talking"}
+{"time": "16:23:50", "kind": "car", "text": "Sorry, could you say that again?"}
+{"time": "16:23:58", "kind": "screen", "text": "listening"}
+{"time": "16:24:03", "kind": "driver", "text": "Oh please park now."}
+{"time": "16:24:03", "kind": "screen", "text": "thinking"}
+{"time": "16:24:10", "kind": "screen", "text": "talking"}
+{"time": "16:24:10", "kind": "car", "text": "Sure. The spot on your left is open and close to the entrance. Shall I park there?"}
+{"time": "16:24:12", "kind": "echo", "text": "Park."}
+{"time": "16:24:15", "kind": "echo", "text": "Please park."}
+{"time": "16:24:18", "kind": "echo", "text": "Park now."}
+{"time": "16:24:21", "kind": "screen", "text": "listening"}
+{"time": "16:24:27", "kind": "driver", "text": "Please."}
+{"time": "16:24:27", "kind": "screen", "text": "thinking"}
+{"time": "16:24:31", "kind": "screen", "text": "checking"}
+{"time": "16:24:31", "kind": "car", "text": "Okay. Let me check the area for safety."}
+{"time": "16:24:43", "kind": "screen", "text": "clear"}
+{"time": "16:24:43", "kind": "car", "text": "All clear. Ready to park on the left. Should I start?"}
+{"time": "16:24:58", "kind": "driver", "text": "Yes."}
+{"time": "16:25:02", "kind": "screen", "text": "parking"}
+{"time": "16:25:02", "kind": "car", "text": "Parking now. Say stop anytime."}
+{"time": "16:25:13", "kind": "driver", "text": "Not"}
+{"time": "16:25:18", "kind": "car", "text": "Sorry, could you say that again?"}
+{"time": "16:25:31", "kind": "car", "text": "No problem. There is also an open spot on your right. Would you like that one?"}
+{"time": "16:25:42", "kind": "driver", "text": "Yes?"}
+{"time": "16:25:44", "kind": "screen", "text": "clear"}
+{"time": "16:25:44", "kind": "car", "text": "All clear. Ready to park on the right. Should I start?"}
+{"time": "16:25:53", "kind": "screen", "text": "parking"}
+{"time": "16:25:53", "kind": "car", "text": "Parking now. Say stop anytime."}
+{"time": "16:25:54", "kind": "echo", "text": "Start."}
+{"time": "16:26:06", "kind": "screen", "text": "parked"}
+{"time": "16:26:06", "kind": "car", "text": "Parked. Don't forget your bag."}
+{"time": "16:26:18", "kind": "driver", "text": "You"}
